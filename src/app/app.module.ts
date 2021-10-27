@@ -23,7 +23,11 @@ import {
   DatePickerAllModule,
 } from '@syncfusion/ej2-angular-calendars';
 
-import { NumericTextBoxAllModule } from '@syncfusion/ej2-angular-inputs';
+import {
+  NumericTextBoxAllModule,
+  TextBoxAllModule,
+  ColorPickerAllModule,
+} from '@syncfusion/ej2-angular-inputs';
 
 import { TreeGridAllModule } from '@syncfusion/ej2-angular-treegrid';
 import { ContextMenuModule } from '@syncfusion/ej2-angular-navigations';
@@ -67,6 +71,8 @@ import { AppComponent } from './app.component';
     BrowserModule,
     SwitchModule,
     ContextMenuModule,
+    TextBoxAllModule,
+    ColorPickerAllModule,
   ],
   providers: [
     PageService,

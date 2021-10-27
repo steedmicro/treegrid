@@ -1,63 +1,76 @@
 <div class="control-section">
-  <ejs-switch></ejs-switch>
+  <ejs-dialog #dialog [buttons]="dialogButtons" [visible]="false" width="300px">
+    <form #form="ngForm">
+      <div class="form-group">
+        <ejs-textbox
+          placeholder="Name"
+          floatLabelType="Auto"
+          [(value)]="columnName"
+          required
+        ></ejs-textbox>
+      </div>
+      <div class="form-group">
+        <ejs-textbox
+          placeholder="Default Value"
+          floatLabelType="Auto"
+          [(value)]="columnDefaultValue"
+        ></ejs-textbox>
+      </div>
+      <div class="form-group" style="padding-top: 10px">
+        <ejs-dropdownlist
+          [dataSource]="dataTypes"
+          placeholder="Data Type"
+          [(value)]="columnDataType"
+        ></ejs-dropdownlist>
+      </div>
+      <div class="form-group">
+        <ejs-textbox
+          placeholder="Minimum Width"
+          floatLabelType="Auto"
+          [(value)]="columnMinimumWidth"
+        ></ejs-textbox>
+      </div>
+      <div class="form-group">
+        <ejs-textbox
+          placeholder="Font Size"
+          floatLabelType="Auto"
+          [(value)]="columnFontSize"
+        ></ejs-textbox>
+      </div>
+      <div class="form-group" style="padding-top: 20px">
+        <label for="colorpicker">Font Color :</label>
+        <input
+          ejs-colorpicker
+          type="color"
+          id="colorpicker"
+          [(value)]="columnFontColor"
+        />
+      </div>
+      <div class="form-group" style="padding-top: 20px">
+        <label for="colorpicker">Background Color :</label>
+        <input
+          ejs-colorpicker
+          type="color"
+          id="colorpicker"
+          [(value)]="columnBackgroundColor"
+        />
+      </div>
+    </form>
+  </ejs-dialog>
   <ejs-treegrid
+    #treegrid
     [dataSource]="data"
-    childMapping="subtasks"
-    height="350"
+    idMapping="TaskID"
+    parentIdMapping="ParentItem"
+    hasChildMapping="isParent"
     [treeColumnIndex]="1"
-    [editSettings]="editSettings"
     [allowResizing]="true"
     [allowReordering]="true"
+    [columns]="columns"
+    [showColumnChooser]="true"
+    [contextMenuItems]="contextMenuItems"
+    (contextMenuClick)="contextMenuClick($event)"
+    (contextMenuOpen)="contextMenuOpen($event)"
   >
-    <e-columns>
-      <e-column
-        field="taskID"
-        headerText="Task ID"
-        width="70"
-        textAlign="Right"
-      ></e-column>
-      <e-column field="taskName" headerText="Task Name" width="200"></e-column>
-      <e-column
-        field="startDate"
-        headerText="Start Date"
-        width="90"
-        format="yMd"
-        textAlign="Right"
-        editType="datepickeredit"
-      ></e-column>
-      <e-column
-        field="endDate"
-        headerText="End Date"
-        width="90"
-        format="yMd"
-        textAlign="Right"
-        editType="datepickeredit"
-      ></e-column>
-      <e-column
-        field="duration"
-        headerText="Duration"
-        width="80"
-        textAlign="Right"
-      ></e-column>
-      <e-column
-        field="progress"
-        headerText="Progress"
-        width="80"
-        textAlign="Right"
-      ></e-column>
-      <e-column field="priority" headerText="Priority" width="90"></e-column>
-    </e-columns>
   </ejs-treegrid>
-  <ejs-contextmenu
-    id="row_header_menu"
-    target=".e-headercell"
-    [items]="rowHeaderMenuItems"
-    (beforeItemRender)="menuItemRender($event)"
-  ></ejs-contextmenu>
-  <ejs-contextmenu
-    id="column_header_menu"
-    target=".e-content"
-    [items]="columnHeaderMenuItems"
-    (beforeItemRender)="menuItemRender($event)"
-  ></ejs-contextmenu>
 </div>

@@ -1,4 +1,5 @@
 <div class="control-section">
+  <ejs-switch #switch></ejs-switch>
   <ejs-dialog #dialog [buttons]="dialogButtons" [visible]="false" width="300px">
     <form #form="ngForm">
       <div class="form-group">
@@ -66,11 +67,18 @@
     [treeColumnIndex]="1"
     [allowResizing]="true"
     [allowReordering]="true"
+    [allowSorting]="true"
+    [allowMultiSorting]="false"
     [columns]="columns"
     [showColumnChooser]="true"
     [contextMenuItems]="contextMenuItems"
     (contextMenuClick)="contextMenuClick($event)"
     (contextMenuOpen)="contextMenuOpen($event)"
+    [allowRowDragAndDrop]="true"
+    [allowSelection]="true"
+    [selectionSettings]="selectOptions"
+    [editSettings]="editSettings"
+    [toolbar]="toolbar"
   >
   </ejs-treegrid>
 </div>

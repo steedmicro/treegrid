@@ -48,6 +48,9 @@ import {
   ExcelExportService,
   PdfExportService,
   ContextMenuService,
+  FreezeService,
+  RowDDService,
+  SelectionService,
 } from '@syncfusion/ej2-angular-treegrid';
 import { AppComponent } from './app.component';
 
@@ -86,6 +89,9 @@ import { AppComponent } from './app.component';
     PdfExportService,
     ContextMenuService,
     ToolbarService,
+    FreezeService,
+    RowDDService,
+    SelectionService,
   ],
   bootstrap: [AppComponent],
 })

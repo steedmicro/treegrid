@@ -8,21 +8,12 @@ import {
 } from '@syncfusion/ej2-angular-dropdowns';
 
 import {
-  ToolbarModule,
-  ToolbarAllModule,
-} from '@syncfusion/ej2-angular-navigations';
-
-import {
   ButtonAllModule,
   CheckBoxAllModule,
   SwitchModule,
 } from '@syncfusion/ej2-angular-buttons';
 
-import {
-  DatePickerModule,
-  DatePickerAllModule,
-} from '@syncfusion/ej2-angular-calendars';
-
+import { DatePickerModule } from '@syncfusion/ej2-angular-calendars';
 import {
   NumericTextBoxAllModule,
   TextBoxAllModule,
@@ -30,10 +21,11 @@ import {
 } from '@syncfusion/ej2-angular-inputs';
 
 import { TreeGridAllModule } from '@syncfusion/ej2-angular-treegrid';
-import { ContextMenuModule } from '@syncfusion/ej2-angular-navigations';
-import { HttpModule } from '@angular/http';
+import {
+  ContextMenuModule,
+  ToolbarModule,
+} from '@syncfusion/ej2-angular-navigations';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-import { RouterModule } from '@angular/router';
 import { CommonModule } from '@angular/common';
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
@@ -58,7 +50,6 @@ import { AppComponent } from './app.component';
   declarations: [AppComponent],
   imports: [
     CommonModule,
-    HttpModule,
     TreeGridAllModule,
     NumericTextBoxAllModule,
     ToolbarModule,

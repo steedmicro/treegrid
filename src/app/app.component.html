@@ -1,6 +1,11 @@
 <div class="control-section">
-  <ejs-switch #switch></ejs-switch>
-  <ejs-dialog #dialog [buttons]="dialogButtons" [visible]="false" width="300px">
+  <ejs-dialog
+    #dialog
+    [buttons]="dialogButtons"
+    [visible]="false"
+    width="300px"
+    style="min-height: 520px; top: 20px"
+  >
     <form #form="ngForm">
       <div class="form-group">
         <ejs-textbox
@@ -56,6 +61,20 @@
           [(value)]="columnBackgroundColor"
         />
       </div>
+      <div class="form-group" style="padding-top: 10px">
+        <ejs-dropdownlist
+          [dataSource]="alignments"
+          placeholder="Alignment"
+          [(value)]="columnAlignment"
+        ></ejs-dropdownlist>
+      </div>
+      <div class="form-group" style="padding-top: 10px">
+        <ejs-dropdownlist
+          [dataSource]="wraps"
+          placeholder="Wrap"
+          [(value)]="columnWrap"
+        ></ejs-dropdownlist>
+      </div>
     </form>
   </ejs-dialog>
   <ejs-treegrid
@@ -69,8 +88,8 @@
     [allowReordering]="true"
     [allowSorting]="true"
     [allowMultiSorting]="false"
+    [allowFiltering]="isFilteringAllowed"
     [columns]="columns"
-    [showColumnChooser]="true"
     [contextMenuItems]="contextMenuItems"
     (contextMenuClick)="contextMenuClick($event)"
     (contextMenuOpen)="contextMenuOpen($event)"
@@ -78,7 +97,6 @@
     [allowSelection]="true"
     [selectionSettings]="selectOptions"
     [editSettings]="editSettings"
-    [toolbar]="toolbar"
   >
   </ejs-treegrid>
 </div>

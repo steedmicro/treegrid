@@ -3,6 +3,8 @@ import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
 import {
   TreeGridComponent,
   ToolbarItems,
+  ColumnModel,
+  ColumnChooser,
 } from '@syncfusion/ej2-angular-treegrid';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
@@ -27,15 +29,15 @@ export class AppComponent implements OnInit {
   public dialogButtons!: Object[];
   public dataTypes!: Object[];
   public minimumWidth: Number = 0;
-  public columnName: string = '';
-  public columnDefaultValue: any;
-  public columnDataType: string = 'string';
-  public columnMinimumWidth: Number = 100;
-  public columnFontSize: Number = 20;
-  public columnFontColor: string = '#000000ff';
-  public columnBackgroundColor: string = '#ffffffff';
-  public columnAlignment: string = 'Left';
-  public columnWrap: string = 'normal';
+  public columnName?: string = '';
+  public columnDefaultValue?: any;
+  public columnDataType?: string = 'string';
+  public columnMinimumWidth?: number | string = 100;
+  public columnFontSize?: number | string = 10;
+  public columnFontColor?: string = '#000000ff';
+  public columnBackgroundColor?: string = '#ffffffff';
+  public columnAlignment?: string = 'Left';
+  public columnWrap?: string = 'normal';
   public alignments: string[] = ['Left', 'Right', 'Center'];
   public wraps: string[] = ['normal', 'break-word'];
   public currentMenuItemID: any = '';
@@ -55,19 +57,17 @@ export class AppComponent implements OnInit {
   public switchObj!: SwitchComponent;
 
   ngOnInit(): void {
-    /*
     this.data = new DataManager({
       url: 'https://ej2services.syncfusion.com/production/web-services/api/SelfReferenceData',
       adaptor: new WebApiAdaptor(),
       crossDomain: true,
       offline: true,
     });
-    */
 
     this.contextMenuItems = [
       { text: 'New', id: 'new_column', target: '.e-headercontent' },
-      { text: 'Del', id: 'del_column', target: '.e-headercontent' },
-      { text: 'Edit', id: 'edit_column', target: '.e-headercontent' },
+      { text: 'Del ', id: 'del_column', target: '.e-headercontent' },
+      { text: 'Edit ', id: 'edit_column', target: '.e-headercontent' },
       { text: 'Choose', id: 'choose_column', target: '.e-headercontent' },
       { text: 'Freeze', id: 'freeze_column', target: '.e-headercontent' },
       { text: 'Filter', id: 'filter_column', target: '.e-headercontent' },
@@ -76,8 +76,8 @@ export class AppComponent implements OnInit {
         id: 'multi_sort_column',
         target: '.e-headercelldiv',
       },
-      { text: 'AddNext', id: 'add_next_row', target: '.e-content' },
-      { text: 'AddChild', id: 'add_child_row', target: '.e-content' },
+      { text: 'AddNext', id: 'Below', target: '.e-content' },
+      { text: 'AddChild', id: 'Child', target: '.e-content' },
       { text: 'MultiSelect', id: 'multi_select_row', target: '.e-content' },
       { text: 'Del', id: 'del_row', target: '.e-content' },
       { text: 'Edit', id: 'edit_row', target: '.e-content' },
@@ -130,7 +130,19 @@ export class AppComponent implements OnInit {
         click: () => {
           if (this.currentMenuItemID === 'new_column') {
             this.addColumn();
+          } else {
+            this.editColumn();
           }
+          this.dialog.hide();
+        },
+      },
+      {
+        buttonModel: {
+          isPrimary: false,
+          content: 'Cancel',
+          cssClass: 'e-flat',
+        },
+        click: () => {
           this.dialog.hide();
         },
       },
@@ -149,6 +161,12 @@ export class AppComponent implements OnInit {
     this.isFilteringAllowed = false;
     this.isMultiSortingAllowed = false;
     this.isMultiSelectingAllowed = false;
+    this.columnStyles = [];
+    let l = this.columns.length;
+    while (l--) {
+      this.columnStyles.push('');
+      this.columnStyles.push('');
+    }
   }
   public beforeMenuItemRender(args: MenuEventArgs) {
     if (args.item.id === 'freeze_column') {
@@ -156,7 +174,7 @@ export class AppComponent implements OnInit {
         '<span class="e-frame e-icons e-check"></span>Freeze';
     }
   }
-  public addColumn() {
+  public saveColumnStyles() {
     let i,
       queryResult = this.treeGridObj.grid
         .getHeaderContent()
@@ -170,37 +188,47 @@ export class AppComponent implements OnInit {
       style = queryResult[i].children[0].getAttribute('style');
       this.columnStyles.push(style ? style.toString() : '');
     }
+  }
+  public loadColumnStyles() {
+    let queryResult = this.treeGridObj.grid
+        .getHeaderContent()
+        .querySelectorAll('.e-headercell'),
+      i = 0,
+      l = queryResult.length;
+
+    while (i < l - 1) {
+      queryResult.item(i).setAttribute('style', this.columnStyles[i * 2]);
+      queryResult
+        .item(i)
+        .children[0].setAttribute('style', this.columnStyles[i * 2 + 1]);
+      i++;
+    }
+  }
+  public addColumn() {
+    this.saveColumnStyles();
     this.columns = [
       ...this.columns,
       {
         field: this.columnName,
         headerText: this.columnName,
-        minimumWidth: this.columnMinimumWidth,
+        minWidth: this.columnMinimumWidth,
         textAlign: this.columnAlignment,
         type: this.columnDataType,
       },
     ];
     setTimeout(() => {
+      this.loadColumnStyles();
       let queryResult = this.treeGridObj.grid
-          .getHeaderContent()
-          .querySelectorAll('.e-headercell'),
-        i = 0,
-        l = queryResult.length;
-      while (i < l - 1) {
-        queryResult.item(i).setAttribute('style', this.columnStyles[i * 2]);
-        queryResult
-          .item(i)
-          .children[0].setAttribute('style', this.columnStyles[i * 2 + 1]);
-        i++;
-      }
+        .getHeaderContent()
+        .querySelectorAll('.e-headercell');
       queryResult
-        .item(l - 1)
+        .item(queryResult.length - 1)
         .setAttribute(
           'style',
           'background-color: ' + this.columnBackgroundColor
         );
       queryResult
-        .item(l - 1)
+        .item(queryResult.length - 1)
         .children[0].setAttribute(
           'style',
           'color: ' +
@@ -210,9 +238,48 @@ export class AppComponent implements OnInit {
             'px; word-wrap:' +
             this.columnWrap
         );
+      this.saveColumnStyles();
     }, 100);
 
     // .setAttribute('style', '{color: red;}');
+  }
+  public editColumn() {
+    this.saveColumnStyles();
+    this.columns = [
+      ...this.columns.slice(0, this.currentColumnIndex),
+      {
+        field: (this.columns[this.currentColumnIndex] as ColumnModel).field,
+        headerText: this.columnName,
+        minWidth: this.columnMinimumWidth,
+        textAlign: this.columnAlignment,
+        type: this.columnDataType,
+      },
+      ...this.columns.slice(this.currentColumnIndex + 1, this.columns.length),
+    ];
+    setTimeout(() => {
+      this.loadColumnStyles();
+      let queryResult = this.treeGridObj.grid
+        .getHeaderContent()
+        .querySelectorAll('.e-headercell');
+      queryResult
+        .item(this.currentColumnIndex)
+        .setAttribute(
+          'style',
+          'background-color: ' + this.columnBackgroundColor
+        );
+      queryResult
+        .item(this.currentColumnIndex)
+        .children[0].setAttribute(
+          'style',
+          'color: ' +
+            this.columnFontColor +
+            '; font-size: ' +
+            this.columnFontSize +
+            'px; word-wrap:' +
+            this.columnWrap
+        );
+      this.saveColumnStyles();
+    }, 100);
   }
   public deleteColumn(columnIndex: number) {
     this.columns = [
@@ -229,7 +296,6 @@ export class AppComponent implements OnInit {
   }
   contextMenuOpen(arg: BeforeOpenCloseEventArgs): void {
     let targetElement: Element = arg.event.target as Element;
-    //arg.element.children[0].appendChild(this.switchObj.element);
     let headerElement = targetElement.closest('.e-headercell');
     let index: number = 0;
     headerElement?.parentElement?.childNodes.forEach((element, key) => {
@@ -238,29 +304,83 @@ export class AppComponent implements OnInit {
         return;
       }
     });
-    this.currentColumnIndex = index;
+    this.currentColumnIndex = index - 1;
   }
   public contextMenuClick(args: MenuEventArgs): void {
     this.currentMenuItemID = args.item.id;
     switch (this.currentMenuItemID) {
       case 'new_column':
+        this.columnName = '';
+        this.columnMinimumWidth = 100;
+        this.columnFontSize = 10;
+        this.columnFontColor = '#000000FF';
+        this.columnBackgroundColor = '#FFFFFFFF';
+        this.columnDataType = 'string';
+        this.columnDefaultValue = '';
+        this.columnWrap = 'normal';
+        this.columnAlignment = 'Left';
+        this.dialog.show();
+        break;
+      case 'edit_column':
+        this.columnName = (
+          this.columns[this.currentColumnIndex] as ColumnModel
+        ).field;
+        this.columnMinimumWidth = (
+          this.columns[this.currentColumnIndex] as ColumnModel
+        ).minWidth;
+        if (this.columnStyles[this.currentColumnIndex * 2] !== '') {
+          this.columnFontSize = this.columnStyles[this.currentColumnIndex]
+            .split(';')[0]
+            .split(':')[1];
+          this.columnFontColor = this.columnStyles[this.currentColumnIndex]
+            .split(';')[1]
+            .split(':')[1];
+          this.columnBackgroundColor =
+            this.columnStyles[this.currentColumnIndex].split(':')[1];
+        } else {
+          this.columnFontSize = 10;
+          this.columnFontColor = '#000000FF';
+          this.columnBackgroundColor = '#FFFFFFFF';
+        }
+        this.columnDataType = (
+          this.columns[this.currentColumnIndex] as ColumnModel
+        ).type;
+        this.columnDefaultValue = '';
+        this.columnWrap = this.columnDataType = (
+          this.columns[this.currentColumnIndex] as ColumnModel
+        ).textAlign;
+        this.columnAlignment = (
+          this.columns[this.currentColumnIndex] as ColumnModel
+        ).textAlign;
         this.dialog.show();
         break;
       case 'del_column':
         this.deleteColumn(this.currentColumnIndex);
         break;
+      case 'choose_column':
+        this.treeGridObj.grid.columnChooserModule.openColumnChooser(0, 0);
+        break;
       case 'freeze_column':
         if (!this.isFrozen) {
-          this.freezeColumn(this.currentColumnIndex);
+          args.element.innerHTML =
+            'Freeze <input type="checkbox" checked class="e-control e-switch e-lib">';
+          this.freezeColumn(this.currentColumnIndex + 1);
         } else {
+          args.element.innerHTML = 'Freeze';
           this.unfreezeColumn();
         }
         this.isFrozen = !this.isFrozen;
         break;
       case 'filter_column':
+        args.element.innerHTML = !this.isFilteringAllowed
+          ? 'Filter <input type="checkbox" checked class="e-control e-switch e-lib">'
+          : 'Filter';
         this.isFilteringAllowed = !this.isFilteringAllowed;
         break;
-      case 'sort_column':
+      case 'multi_sort_column':
+        args.element.innerHTML = !this.isMultiSortingAllowed
+          ? 'MultiSort <input type="checkbox" checked class="e-control e-switch e-lib">'
+          : 'MultiSort';
         this.isMultiSortingAllowed = !this.isMultiSortingAllowed;
         break;
       case 'add_next_row':
@@ -284,6 +404,9 @@ export class AppComponent implements OnInit {
         } else {
           this.selectOptions = { type: 'Multiple' };
         }
+        args.element.innerHTML = !this.isMultiSelectingAllowed
+          ? 'MultiSelect <input type="checkbox" checked class="e-control e-switch e-lib">'
+          : 'MultiSelect';
         this.isMultiSelectingAllowed = !this.isMultiSelectingAllowed;
         break;
       case 'paste_next_row':

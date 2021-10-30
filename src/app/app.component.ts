@@ -1,5 +1,5 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
-import { DataManager, WebApiAdaptor } from '@syncfusion/ej2-data';
+import { DataManager, JsonAdaptor } from '@syncfusion/ej2-data';
 import {
   TreeGridComponent,
   ToolbarItems,
@@ -17,6 +17,7 @@ import {
 } from '@syncfusion/ej2-angular-grids';
 import { FormGroup, FormControl } from '@angular/forms';
 import { FormValidators } from '@syncfusion/ej2-angular-inputs';
+import { sampleData } from './testjsondata';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -49,6 +50,7 @@ export class AppComponent implements OnInit {
   public selectOptions!: Object;
   public editSettings!: Object;
   public position: any = { x: 100, y: 100 };
+  public copyContent: any;
   @ViewChild('treegrid')
   public treeGridObj!: TreeGridComponent;
   @ViewChild('dialog')
@@ -57,24 +59,29 @@ export class AppComponent implements OnInit {
   public switchObj!: SwitchComponent;
 
   ngOnInit(): void {
+    /*
     this.data = new DataManager({
-      url: 'https://ej2services.syncfusion.com/production/web-services/api/SelfReferenceData',
+      url: 'testdata.json',
       adaptor: new WebApiAdaptor(),
       crossDomain: true,
       offline: true,
     });
+    */
+    this.data = new DataManager({
+      json: sampleData,
+    });
 
     this.contextMenuItems = [
-      { text: 'New', id: 'new_column', target: '.e-headercontent' },
-      { text: 'Del ', id: 'del_column', target: '.e-headercontent' },
-      { text: 'Edit ', id: 'edit_column', target: '.e-headercontent' },
-      { text: 'Choose', id: 'choose_column', target: '.e-headercontent' },
-      { text: 'Freeze', id: 'freeze_column', target: '.e-headercontent' },
-      { text: 'Filter', id: 'filter_column', target: '.e-headercontent' },
+      { text: 'New', id: 'new_column', target: '.e-headercell' },
+      { text: 'Del ', id: 'del_column', target: '.e-headercell' },
+      { text: 'Edit ', id: 'edit_column', target: '.e-headercell' },
+      { text: 'Choose', id: 'choose_column', target: '.e-headercell' },
+      { text: 'Freeze', id: 'freeze_column', target: '.e-headercell' },
+      { text: 'Filter', id: 'filter_column', target: '.e-headercell' },
       {
         text: 'MultiSort',
         id: 'multi_sort_column',
-        target: '.e-headercelldiv',
+        target: '.e-headercell',
       },
       { text: 'AddNext', id: 'Below', target: '.e-content' },
       { text: 'AddChild', id: 'Child', target: '.e-content' },
@@ -91,6 +98,7 @@ export class AppComponent implements OnInit {
         field: 'TaskID',
         headerText: 'Task ID',
         textAlign: 'Right',
+        isPrimaryKey: true,
       },
       {
         field: 'StartDate',
@@ -196,7 +204,7 @@ export class AppComponent implements OnInit {
       i = 0,
       l = queryResult.length;
 
-    while (i < l - 1) {
+    while (i < l) {
       queryResult.item(i).setAttribute('style', this.columnStyles[i * 2]);
       queryResult
         .item(i)
@@ -216,32 +224,31 @@ export class AppComponent implements OnInit {
         type: this.columnDataType,
       },
     ];
-    setTimeout(() => {
-      this.loadColumnStyles();
-      let queryResult = this.treeGridObj.grid
-        .getHeaderContent()
-        .querySelectorAll('.e-headercell');
-      queryResult
-        .item(queryResult.length - 1)
-        .setAttribute(
-          'style',
-          'background-color: ' + this.columnBackgroundColor
-        );
-      queryResult
-        .item(queryResult.length - 1)
-        .children[0].setAttribute(
-          'style',
-          'color: ' +
-            this.columnFontColor +
-            '; font-size: ' +
-            this.columnFontSize +
-            'px; word-wrap:' +
-            this.columnWrap
-        );
-      this.saveColumnStyles();
-    }, 100);
-
-    // .setAttribute('style', '{color: red;}');
+    this.currentColumnIndex = this.columns.length - 1;
+  }
+  public actionBegin($event: any) {
+    //this.saveColumnStyles();
+  }
+  public actionComplete($event: any) {
+    this.loadColumnStyles();
+    let queryResult = this.treeGridObj.grid
+      .getHeaderContent()
+      .querySelectorAll('.e-headercell');
+    queryResult
+      .item(this.currentColumnIndex)
+      .setAttribute('style', 'background-color: ' + this.columnBackgroundColor);
+    queryResult
+      .item(this.currentColumnIndex)
+      .children[0].setAttribute(
+        'style',
+        'color: ' +
+          this.columnFontColor +
+          '; font-size: ' +
+          this.columnFontSize +
+          'px; word-wrap:' +
+          this.columnWrap
+      );
+    this.saveColumnStyles();
   }
   public editColumn() {
     this.saveColumnStyles();
@@ -256,30 +263,6 @@ export class AppComponent implements OnInit {
       },
       ...this.columns.slice(this.currentColumnIndex + 1, this.columns.length),
     ];
-    setTimeout(() => {
-      this.loadColumnStyles();
-      let queryResult = this.treeGridObj.grid
-        .getHeaderContent()
-        .querySelectorAll('.e-headercell');
-      queryResult
-        .item(this.currentColumnIndex)
-        .setAttribute(
-          'style',
-          'background-color: ' + this.columnBackgroundColor
-        );
-      queryResult
-        .item(this.currentColumnIndex)
-        .children[0].setAttribute(
-          'style',
-          'color: ' +
-            this.columnFontColor +
-            '; font-size: ' +
-            this.columnFontSize +
-            'px; word-wrap:' +
-            this.columnWrap
-        );
-      this.saveColumnStyles();
-    }, 100);
   }
   public deleteColumn(columnIndex: number) {
     this.columns = [
@@ -324,7 +307,7 @@ export class AppComponent implements OnInit {
       case 'edit_column':
         this.columnName = (
           this.columns[this.currentColumnIndex] as ColumnModel
-        ).field;
+        ).headerText;
         this.columnMinimumWidth = (
           this.columns[this.currentColumnIndex] as ColumnModel
         ).minWidth;
@@ -411,15 +394,18 @@ export class AppComponent implements OnInit {
         break;
       case 'paste_next_row':
         let rowInd = this.treeGridObj.getSelectedRowIndexes();
-        let data: string = this.treeGridObj.clipboardModule['copyContent'];
-        this.insertfetchedData(data, rowInd[0] + 1);
+        this.insertFetchedData(this.copyContent, rowInd[0] + 1);
         break;
       default:
         break;
     }
   }
 
-  public insertfetchedData(data: string, InsertRow: number): void {
+  public beforeCopy(event: any): void {
+    this.copyContent = event.data;
+  }
+
+  public insertFetchedData(data: string, InsertRow: number): void {
     var grid = this.treeGridObj.grid;
     var col;
     var value;
@@ -427,10 +413,10 @@ export class AppComponent implements OnInit {
     var rows = data.split('\n');
     var cols;
 
-    var dataRows = grid.getDataRows();
-    var res: any = {};
+    var res: any;
 
     for (var r = 0; r < rows.length; r++) {
+      res = {};
       cols = rows[r].split('\t');
 
       for (var c = 0; c < cols.length; c++) {
@@ -439,7 +425,8 @@ export class AppComponent implements OnInit {
         value = cols[c];
         res[col.field] = value;
       }
+
+      this.treeGridObj.addRecord(res, InsertRow);
     }
-    this.treeGridObj.addRecord(res, InsertRow);
   }
 }

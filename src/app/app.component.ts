@@ -2,9 +2,7 @@ import { Component, OnInit, ViewChild } from '@angular/core';
 import { DataManager, JsonAdaptor } from '@syncfusion/ej2-data';
 import {
   TreeGridComponent,
-  ToolbarItems,
   ColumnModel,
-  ColumnChooser,
 } from '@syncfusion/ej2-angular-treegrid';
 import { MenuEventArgs } from '@syncfusion/ej2-navigations';
 import { BeforeOpenCloseEventArgs } from '@syncfusion/ej2-inputs';
@@ -18,6 +16,7 @@ import {
 import { FormGroup, FormControl } from '@angular/forms';
 import { FormValidators } from '@syncfusion/ej2-angular-inputs';
 import { sampleData } from './testjsondata';
+import { Units } from '@syncfusion/ej2-charts';
 @Component({
   selector: 'app-root',
   templateUrl: 'app.component.html',
@@ -34,8 +33,8 @@ export class AppComponent implements OnInit {
   public columnDefaultValue?: any;
   public columnDataType?: string = 'string';
   public columnMinimumWidth?: number | string = 100;
-  public columnFontSize?: number | string = 10;
-  public columnFontColor?: string = '#000000ff';
+  public columnFontSize?: number | string = 12;
+  public columnFontColor?: string = '#767676ff';
   public columnBackgroundColor?: string = '#ffffffff';
   public columnAlignment?: string = 'Left';
   public columnWrap?: string = 'normal';
@@ -49,8 +48,9 @@ export class AppComponent implements OnInit {
   public isMultiSelectingAllowed!: boolean;
   public selectOptions!: Object;
   public editSettings!: Object;
-  public position: any = { x: 100, y: 100 };
   public copyContent: any;
+  public copiedRow: any;
+  public cutMode: boolean = false;
   @ViewChild('treegrid')
   public treeGridObj!: TreeGridComponent;
   @ViewChild('dialog')
@@ -58,6 +58,21 @@ export class AppComponent implements OnInit {
   @ViewChild('switch')
   public switchObj!: SwitchComponent;
 
+  getEditTypeFromType(type: string | undefined): string {
+    switch (type) {
+      case 'string':
+        return '';
+      case 'number':
+        return 'numericedit';
+      case 'date':
+        return 'datepickeredit';
+      case 'boolean':
+        return 'checkboxedit';
+      case 'dropdown':
+        return 'dropdownedit';
+    }
+    return '';
+  }
   ngOnInit(): void {
     /*
     this.data = new DataManager({
@@ -105,27 +120,35 @@ export class AppComponent implements OnInit {
         headerText: 'Start Date',
         format: 'yMd',
         textAlign: 'Right',
-        editType: 'datepicker',
+        editType: 'datepickeredit',
+        type: 'date',
       },
       {
         field: 'EndDate',
         headerText: 'End Date',
         format: 'yMd',
         textAlign: 'Right',
-        editType: 'datepicker',
+        editType: 'datepickeredit',
+        type: 'date',
       },
       {
         field: 'Duration',
         headerText: 'Duration',
         textAlign: 'Right',
+        editType: 'numericedit',
+        type: 'number',
       },
       {
         field: 'Progress',
         headerText: 'Progress',
+        type: 'dropdown',
+        editType: 'dropdownedit',
       },
       {
         field: 'Priority',
         headerText: 'Priority',
+        type: 'dropdown',
+        editType: 'dropdownedit',
       },
     ];
     this.dialogButtons = [
@@ -155,7 +178,7 @@ export class AppComponent implements OnInit {
         },
       },
     ];
-    this.dataTypes = ['string', 'number', 'date', 'boolean', 'dropdownlist'];
+    this.dataTypes = ['string', 'number', 'date', 'boolean', 'dropdown'];
     this.selectOptions = { type: 'Single' };
     this.editSettings = {
       allowEditing: true,
@@ -222,6 +245,10 @@ export class AppComponent implements OnInit {
         minWidth: this.columnMinimumWidth,
         textAlign: this.columnAlignment,
         type: this.columnDataType,
+        editType: this.getEditTypeFromType(this.columnDataType),
+        format: this.columnDataType === 'date' ? 'yMd' : '',
+        displayAsCheckBox: this.columnDataType === 'boolean',
+        defaultValue: this.columnDefaultValue,
       },
     ];
     this.currentColumnIndex = this.columns.length - 1;
@@ -231,23 +258,14 @@ export class AppComponent implements OnInit {
   }
   public actionComplete($event: any) {
     this.loadColumnStyles();
+    this.resetMark2Row(this.copiedRow);
     let queryResult = this.treeGridObj.grid
       .getHeaderContent()
       .querySelectorAll('.e-headercell');
     queryResult
       .item(this.currentColumnIndex)
       .setAttribute('style', 'background-color: ' + this.columnBackgroundColor);
-    queryResult
-      .item(this.currentColumnIndex)
-      .children[0].setAttribute(
-        'style',
-        'color: ' +
-          this.columnFontColor +
-          '; font-size: ' +
-          this.columnFontSize +
-          'px; word-wrap:' +
-          this.columnWrap
-      );
+
     this.saveColumnStyles();
   }
   public editColumn() {
@@ -260,6 +278,10 @@ export class AppComponent implements OnInit {
         minWidth: this.columnMinimumWidth,
         textAlign: this.columnAlignment,
         type: this.columnDataType,
+        editType: this.getEditTypeFromType(this.columnDataType),
+        format: this.columnDataType === 'date' ? 'yMd' : '',
+        displayAsCheckBox: this.columnDataType === 'boolean',
+        defaultValue: this.columnDefaultValue,
       },
       ...this.columns.slice(this.currentColumnIndex + 1, this.columns.length),
     ];
@@ -295,8 +317,8 @@ export class AppComponent implements OnInit {
       case 'new_column':
         this.columnName = '';
         this.columnMinimumWidth = 100;
-        this.columnFontSize = 10;
-        this.columnFontColor = '#000000FF';
+        this.columnFontSize = 12;
+        this.columnFontColor = '#767676FF';
         this.columnBackgroundColor = '#FFFFFFFF';
         this.columnDataType = 'string';
         this.columnDefaultValue = '';
@@ -321,17 +343,14 @@ export class AppComponent implements OnInit {
           this.columnBackgroundColor =
             this.columnStyles[this.currentColumnIndex].split(':')[1];
         } else {
-          this.columnFontSize = 10;
-          this.columnFontColor = '#000000FF';
+          this.columnFontSize = 12;
+          this.columnFontColor = '#767676FF';
           this.columnBackgroundColor = '#FFFFFFFF';
         }
         this.columnDataType = (
           this.columns[this.currentColumnIndex] as ColumnModel
         ).type;
         this.columnDefaultValue = '';
-        this.columnWrap = this.columnDataType = (
-          this.columns[this.currentColumnIndex] as ColumnModel
-        ).textAlign;
         this.columnAlignment = (
           this.columns[this.currentColumnIndex] as ColumnModel
         ).textAlign;
@@ -379,7 +398,20 @@ export class AppComponent implements OnInit {
           });
         break;
       case 'copy_row':
-        this.treeGridObj.copy();
+        this.cutMode = false;
+        this.resetMark2Row(this.copiedRow);
+        this.copiedRow = this.treeGridObj.getSelectedRowIndexes();
+        this.setCopyData(false);
+        document.execCommand('copy');
+        this.setMark2Row(this.treeGridObj.getSelectedRowIndexes());
+        break;
+      case 'cut_row':
+        this.cutMode = true;
+        this.resetMark2Row(this.copiedRow);
+        this.copiedRow = this.treeGridObj.getSelectedRowIndexes();
+        this.setCopyData(false);
+        document.execCommand('copy');
+        this.setMark2Row(this.treeGridObj.getSelectedRowIndexes());
         break;
       case 'multi_select_row':
         if (this.isMultiSelectingAllowed) {
@@ -393,16 +425,152 @@ export class AppComponent implements OnInit {
         this.isMultiSelectingAllowed = !this.isMultiSelectingAllowed;
         break;
       case 'paste_next_row':
-        let rowInd = this.treeGridObj.getSelectedRowIndexes();
-        this.insertFetchedData(this.copyContent, rowInd[0] + 1);
+        let rowInd2Paste = this.treeGridObj.getSelectedRowIndexes();
+        //this.copyContent = ;
+        this.resetMark2Row(this.copiedRow);
+        this.insertFetchedData(this.copyContent, rowInd2Paste[0] + 1);
+        if (this.cutMode == true) {
+          // delete selected rows
+          this.copiedRow.forEach((index: any) => {
+            this.treeGridObj.deleteRow(this.treeGridObj.getRows()[index]);
+          });
+        }
         break;
       default:
         break;
     }
   }
 
-  public beforeCopy(event: any): void {
-    this.copyContent = event.data;
+  public setMark2Row(rowIndexes: any) {
+    let i, style;
+    let l = rowIndexes.length;
+    for (i = 0; i < l; i++) {
+      let queryResult = this.treeGridObj.grid
+        .getRowByIndex(rowIndexes[i])
+        .querySelectorAll('td');
+      let cl = queryResult.length;
+      for (let j = 0; j < cl; j++) {
+        style = queryResult.item(j).getAttribute('style');
+        queryResult
+          .item(j)
+          .setAttribute(
+            'style',
+            style == null
+              ? 'background-color: pink'
+              : style + 'background-color: pink'
+          );
+      }
+    }
+  }
+
+  public resetMark2Row(rowIndexes: any) {
+    if (rowIndexes == null) return;
+    let i, style;
+    let l = rowIndexes.length;
+    for (i = 0; i < l; i++) {
+      let queryResult = this.treeGridObj.grid
+        .getRowByIndex(rowIndexes[i])
+        .querySelectorAll('td');
+      let cl = queryResult.length;
+      for (let j = 0; j < cl; j++) {
+        style = queryResult.item(j).getAttribute('style');
+        if (style == null) continue;
+        console.log(style);
+        let stringInd = style.search('background-color');
+        style = style.slice(0, stringInd);
+        console.log(style);
+        if (style == null) style = '';
+        queryResult.item(j).setAttribute('style', style);
+      }
+    }
+  }
+
+  public getCopyData(
+    cells: any,
+    isCell: any,
+    splitKey: any,
+    withHeader: any
+  ): void {
+    var isElement = typeof cells[0] !== 'string';
+    for (var j = 0; j < cells.length; j++) {
+      if (withHeader && isCell) {
+        var colIdx = parseInt(cells[j].getAttribute('aria-colindex'), 10);
+        this.copyContent +=
+          this.treeGridObj.grid.getColumns()[colIdx].headerText + '\n';
+      }
+      if (isElement) {
+        if (!cells[j].classList.contains('e-hide')) {
+          this.copyContent += cells[j].innerText;
+        }
+      } else {
+        this.copyContent += cells[j];
+      }
+      if (j < cells.length - 1) {
+        this.copyContent += splitKey;
+      }
+    }
+  }
+
+  public setCopyData(withHeader: Boolean): void {
+    var isFrozen = this.treeGridObj.grid.isFrozenGrid();
+    this.copyContent = '';
+    let mRows: Element[] = [];
+    let frRows;
+    var rows = this.treeGridObj.grid.getRows();
+    if (isFrozen) {
+      mRows = this.treeGridObj.grid.getMovableDataRows();
+      if (this.treeGridObj.grid.getFrozenMode() === 'Left-Right') {
+        frRows = this.treeGridObj.grid.getFrozenRightRows();
+      }
+    }
+
+    var selectedIndexes = this.treeGridObj.grid
+      .getSelectedRowIndexes()
+      .sort(function (a, b) {
+        return a - b;
+      });
+    if (withHeader) {
+      var headerTextArray = [];
+      for (
+        var i = 0;
+        i < this.treeGridObj.grid.getVisibleColumns().length;
+        i++
+      ) {
+        headerTextArray[i] =
+          this.treeGridObj.grid.getVisibleColumns()[i].headerText;
+      }
+      this.getCopyData(headerTextArray, false, '\t', withHeader);
+      this.copyContent += '\n';
+    }
+    for (var i = 0; i < selectedIndexes.length; i++) {
+      if (i > 0) {
+        this.copyContent += '\n';
+      }
+      var cells = [].slice.call(
+        rows[selectedIndexes[i]].querySelectorAll('.e-rowcell:not(.e-hide)')
+      );
+      if (isFrozen) {
+        cells.push.apply(
+          cells,
+          [].slice.call(
+            mRows[selectedIndexes[i]].querySelectorAll(
+              '.e-rowcell:not(.e-hide)'
+            )
+          )
+        );
+        if (frRows) {
+          cells.push.apply(
+            cells,
+            [].slice.call(
+              frRows[selectedIndexes[i]].querySelectorAll(
+                '.e-rowcell:not(.e-hide)'
+              )
+            )
+          );
+        }
+      }
+      this.getCopyData(cells, false, '\t', withHeader);
+    }
   }
 
   public insertFetchedData(data: string, InsertRow: number): void {
@@ -415,7 +583,7 @@ export class AppComponent implements OnInit {
 
     var res: any;
 
-    for (var r = 0; r < rows.length; r++) {
+    for (var r = rows.length - 1; r >= 0; r--) {
       res = {};
       cols = rows[r].split('\t');
 

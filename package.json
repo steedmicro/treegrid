@@ -3,7 +3,7 @@
   "version": "0.0.0",
   "scripts": {
     "ng": "ng",
-    "start": "ng serve",
+    "start": "nodemon server.js ",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
@@ -28,6 +28,8 @@
     "@syncfusion/ej2-angular-navigations": "^19.3.46",
     "@syncfusion/ej2-angular-popups": "^19.3.43",
     "@syncfusion/ej2-angular-treegrid": "^19.3.46",
+    "express": "^4.17.1",
+    "nodemon": "^2.0.14",
     "rxjs": "~6.6.0",
     "tslib": "^2.3.0",
     "zone.js": "~0.11.4"
